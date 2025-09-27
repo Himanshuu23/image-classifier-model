@@ -1,4 +1,5 @@
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 N = 5
 ITER = 5
@@ -50,5 +51,22 @@ def show_probabilities(images, model, N=5):
         predicted = prob.argmax()
         confidence = prob.max()
         print(f"Predicted class: {predicted} with probability {confidence:.4f}\n")
+
+        plt.figure(figsize=(6,3))
+
+        plt.subplot(1,2,1)
+        plt.imshow(images[i], cmap="gray")
+        plt.axis("off")
+        plt.title("Input Image")
+        
+        plt.subplot(1,2,2)
+        plt.bar(range(10), prob)
+        plt.xticks(range(10))
+        plt.xlabel("Class")
+        plt.ylabel("Probability")
+        plt.title(f"Predicted: {predicted} ({confidence:.2f})")
+
+        plt.tight_layout()
+        plt.show()
 
 show_probabilities(x_test, probability_model, N=5)
