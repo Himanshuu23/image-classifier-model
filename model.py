@@ -1,5 +1,8 @@
 import tensorflow as tf
 
+N = 5
+ITER = 5
+
 # Building the Model
 mnist = tf.keras.datasets.mnist
 
@@ -14,8 +17,38 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Dense(10),
 ])
 
-logits = model(x_train[:1])
+logits = model(x_train[:N])
 probabilities = tf.nn.softmax(logits)
 
 loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-loss_fn(y_train[:1], logits).numpy()
+loss_fn(y_train[:N], logits).numpy()
+
+# Training the Model
+model.compile(optimizer='adam',
+              loss=loss_fn,
+              metrics=['accuracy'])
+
+model.fit(x_train, y_train, epochs=ITER)
+model.evaluate(x_test, y_test, verbose=2)
+
+probability_model = tf.keras.Sequential([
+    model,
+    tf.keras.layers.Softmax()
+])
+
+def show_probabilities(images, model, N=5):
+    """
+    images: batch of images to predict
+    model: probability_model (outputs softmax probabilities)
+    N: number of images to show
+    """
+    probs = model(images[:N]).numpy()
+    for i, prob in enumerate(probs):
+        print(f"Image {i+1} -> Probabilities:")
+        for digit, p in enumerate(prob):
+            print(f"  Class {digit}: {p:.4f}")
+        predicted = prob.argmax()
+        confidence = prob.max()
+        print(f"Predicted class: {predicted} with probability {confidence:.4f}\n")
+
+show_probabilities(x_test, probability_model, N=5)

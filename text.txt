@@ -37,7 +37,7 @@ If you feed in softmax outputs:
 The loss calculation can become less numerically stable (risk of tiny rounding errors or extreme values causing instability).
 TensorFlow’s optimized loss functions combine softmax + cross-entropy in a single step for exact, stable calculations.
 
-Loss function (sparse_categorical_crossentropy) compares:
+Loss function (sparse_categorical_crossentropy) compares: - here explain things for the loss function as all the things mentioned below and also for the weights and bias too before using the formula for the same too
 Ground truth (correct class, e.g., 5)
 Logits (model’s raw outputs)
 It computes negative log probability of the correct class:
@@ -49,5 +49,76 @@ In short: loss measures how “wrong” the model is, starting high when predict
 
 The loss value (2.36) is expected: your model is untrained, so it outputs almost random probabilities.
 
-// Training the Model
+1. What are weights?
+Weights are numbers that scale the input features in a neuron.
+Each connection between neurons has a weight.
+Example: if an input pixel is 0.5 and weight is 2, the neuron sees 0.5 × 2 = 1.
+Weights determine how important each input is for making a prediction.
 
+2. What are biases?
+Bias is an extra number added to the weighted sum before applying activation.
+It allows the neuron to shift the activation function left or right.
+Think of it as the “intercept” in a linear equation: y = wx + b.
+
+3. Why do we need them?
+Without weights, all inputs are treated equally → the model can’t learn patterns.
+Without bias, neurons are forced to always go through the origin → limits flexibility.
+Together, weights + biases let neurons learn complex relationships in the data.
+
+4. How it works in a neuron
+Neuron receives inputs [x1, x2, x3, ...].
+Computes weighted sum + bias:
+
+-- show the linear, non linear graphs -> straight line and also the intercepts on the same
+
+// Training the Model - setting rules for training
+optimizer='adam' → decides how the model updates its weights during training to reduce loss.
+loss=loss_fn → tells the model what error to minimize (how to measure “wrongness” of predictions).
+metrics=['accuracy'] → tells Keras what to report during training, e.g., percentage of correct predictions.
+- also explain inside optimizer function that is that maths behind like using differentiation to reduce the value of that loss function using that limits equation
+
+how ez the things are in tensorflow - though in production and researches we use pytorch since more speed and everything yk
+
+model.fit(x_train, y_train, epochs=5) → trains the model.
+Feeds the training data (x_train, y_train) into the network.
+Updates weights and biases using the optimizer and loss function.
+Epochs=5 → the model sees the entire training set 5 times. -> iterations - each time same data is fed it learns and becomes better, improves
+After this, the model learns patterns and improves its predictions.
+
+model.evaluate(x_test, y_test) → tests the trained model on unseen data and returns the loss and metrics (like accuracy).
+verbose=2 → controls how much information is printed during evaluation:
+0 → silent
+1 → progress bar
+2 → one line per epoch/batch (detailed but not a bar)
+-- use that image from the screenshots for the same 
+conclusion from the result :-
+(1) loss value is decreasing showing that the model is improving at each iteration
+(2) the accuracy at each iteration hence is increasing then.
+
+To have the model return probability instead then we can make another new model wrapping around the current one
+probability_model = tf.keras.Sequential([
+  model,
+  tf.keras.layers.Softmax()
+])
+
+-- also showing the input and output complete internal array structure like 2D and etc workflow -> complete
+
+Also to sending now more than one image to the data from the test image array
+probability_model(x_test[:5])
+
+-- Now printing the highest probability that is according to the model what class each image belongs to
+probs = probability_model(x_test[:5]).numpy()
+    probs shape → (5, 10)
+        5 rows → 5 images
+        10 columns → 10 classes (digits 0–9)
+
+for i, prob in enumerate(probs):
+    print(f"Image {i+1} -> Probabilities:")
+    for digit, p in enumerate(prob):
+        print(f"  Class {digit}: {p:.4f}")
+    predicted = prob.argmax()
+    confidence = prob.max()
+    print(f"Predicted class: {predicted} with probability {confidence:.4f}\n")
+
+explain this a bit nothing hard though just 2d arrays and using argmax and max for getting max index -> class and max value -> probability
+-- show the screenshot for the same too
