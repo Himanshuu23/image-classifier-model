@@ -1,0 +1,53 @@
+// Building the Model
+
+1. Input preprocessing
+Resize image to 28×28 → because the model expects that shape.
+Normalize 0–255 → 0–1 → ensures stable, efficient training.
+Not just “less calculation” — it also keeps gradients stable, preventing huge values that break learning.
+
+2. Hidden layer + activation
+Dense layer with ReLU → each neuron computes weighted sum of inputs + activation.
+Small correction: ReLU adds non-linearity, not linearity. Linear = just straight line, non-linear = can model curves and complex patterns.
+Dropout → randomly disables neurons during training → prevents overfitting, forces network to learn more robust patterns.
+
+3. Output layer
+The not used neurons -> hidden layers they observe pattern and hence in the end we use dense again to use their results too.
+Dense layer with 10 neurons → one for each class (digit 0–9).
+Clarification: we do not need activation here only if we use from_logits=True in the loss. Otherwise, softmax is applied to convert logits → probabilities.
+Model outputs 10 numbers → after softmax → probabilities → sum = 1 → pick the class with highest probability.
+
+4. Labels / test_y
+y_train / y_test are single integers 0–9, not 10 probabilities.
+During training, the loss function compares the predicted probabilities to the true label (integer) to update weights.
+
+5. Overall workflow
+Input image → preprocess → normalized 28×28 array.
+Flatten → Dense + ReLU → Dropout → Dense output layer.
+Output logits → softmax → probabilities for 10 classes.
+Pick class with highest probability → predicted digit.
+Compare prediction to true label → update weights → repeat for all training images.
+
+We can also directly use softmax in the activation function too
+tf.keras.layers.Dense(10, activation='softmax')
+- already specifying input size
+-> these would directly print the probabilites and not raw logits but this is not advised since then
+Training a model uses a loss function like sparse_categorical_crossentropy.
+Most implementations of this loss expect raw logits, not softmax outputs.
+If you feed in softmax outputs:
+The loss calculation can become less numerically stable (risk of tiny rounding errors or extreme values causing instability).
+TensorFlow’s optimized loss functions combine softmax + cross-entropy in a single step for exact, stable calculations.
+
+Loss function (sparse_categorical_crossentropy) compares:
+Ground truth (correct class, e.g., 5)
+Logits (model’s raw outputs)
+It computes negative log probability of the correct class:
+If model is confident and correct → loss ≈ 0
+If model is unsure → higher loss
+Untrained model → predicts roughly equal probability for all classes (1/10 each for MNIST)
+Loss = -log(1/10) ≈ 2.3 → explains why initial loss is around 2.3.
+In short: loss measures how “wrong” the model is, starting high when predictions are random.
+
+The loss value (2.36) is expected: your model is untrained, so it outputs almost random probabilities.
+
+// Training the Model
+
